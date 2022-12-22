@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using EntityStates;
 using EntityStates.Scrapper;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using RoR2;
 using System;
 using System.Collections.Generic;
@@ -44,9 +46,38 @@ namespace PrintToInventory
 			affectScrappers = Config.Bind("General", "Scrapper", true, "Affect this interactable.").Value;
 			affectCleanse = Config.Bind("General", "Cleansing Pool", true, "Affect this interactable.").Value;
 
-			if (affectScrappers) On.EntityStates.Scrapper.ScrappingToIdle.OnEnter += ScrappingToIdle_OnEnter;
 			if (affectCauldrons || affectPrinters || affectCleanse) On.RoR2.ShopTerminalBehavior.DropPickup += ShopTerminalBehavior_DropPickup;
-        }
+			if (affectScrappers)
+            {
+				IL.EntityStates.Scrapper.ScrappingToIdle.OnEnter += (il) =>
+				{
+					ILCursor c = new ILCursor(il);
+					c.GotoNext(x => x.MatchLdloc(0), x => x.MatchLdsfld(typeof(PickupIndex), "none"));
+					c.Index++;
+					c.Emit(OpCodes.Ldarg_0);
+					c.EmitDelegate<Func<PickupIndex, ScrappingToIdle, PickupIndex>>((pickupIndex, self) =>
+					{
+						if (pickupIndex != PickupIndex.none && self.scrapperController && self.scrapperController.interactor)
+                        {
+							CharacterBody cb = self.scrapperController.interactor.GetComponent<CharacterBody>();
+							if (cb && cb.inventory)
+							{
+								PickupDef pd = PickupCatalog.GetPickupDef(pickupIndex);
+								if (pd != null && pd.itemIndex != ItemIndex.None)
+								{
+									cb.inventory.GiveItem(pd.itemIndex, self.scrapperController.itemsEaten);
+									self.scrapperController.itemsEaten = 0;
+									return PickupIndex.none;
+								}
+							}
+						}
+						return pickupIndex;
+					});
+					//c.Emit(OpCodes.Stloc_0);
+					//c.Emit(OpCodes.Ldloc_0);
+				};
+            }
+		}
 
         private void ShopTerminalBehavior_DropPickup(On.RoR2.ShopTerminalBehavior.orig_DropPickup orig, ShopTerminalBehavior self)
         {
@@ -83,79 +114,5 @@ namespace PrintToInventory
 			}
 			if (!addedToInventory) orig(self);
         }
-
-        private static void ScrappingToIdle_OnEnter(On.EntityStates.Scrapper.ScrappingToIdle.orig_OnEnter orig, ScrappingToIdle self)
-        {
-            //Not strictly needed here, but just in case a mod does something wacky.
-            if (self.characterBody)
-            {
-                self.attackSpeedStat = self.characterBody.attackSpeed;
-                self.damageStat = self.characterBody.damage;
-                self.critStat = self.characterBody.crit;
-                self.moveSpeedStat = self.characterBody.moveSpeed;
-            }
-
-            self.pickupPickerController = self.GetComponent<PickupPickerController>();
-            self.scrapperController = self.GetComponent<ScrapperController>();
-            self.pickupPickerController.SetAvailable(self.enableInteraction);
-
-			Util.PlaySound(ScrappingToIdle.enterSoundString, self.gameObject);
-			self.PlayAnimation("self", "ScrappingToIdle", "Scrapping.playbackRate", ScrappingToIdle.duration);
-			if (ScrappingToIdle.muzzleflashEffectPrefab)
-			{
-				EffectManager.SimpleMuzzleFlash(ScrappingToIdle.muzzleflashEffectPrefab, self.gameObject, ScrappingToIdle.muzzleString, false);
-			}
-			if (!NetworkServer.active)
-			{
-				return;
-			}
-			self.foundValidScrap = false;
-			PickupIndex pickupIndex = PickupIndex.none;
-			ItemDef itemDef = ItemCatalog.GetItemDef(self.scrapperController.lastScrappedItemIndex);
-			if (itemDef != null)
-			{
-				switch (itemDef.tier)
-				{
-					case ItemTier.Tier1:
-						pickupIndex = PickupCatalog.FindPickupIndex("ItemIndex.ScrapWhite");
-						break;
-					case ItemTier.Tier2:
-						pickupIndex = PickupCatalog.FindPickupIndex("ItemIndex.ScrapGreen");
-						break;
-					case ItemTier.Tier3:
-						pickupIndex = PickupCatalog.FindPickupIndex("ItemIndex.ScrapRed");
-						break;
-					case ItemTier.Boss:
-						pickupIndex = PickupCatalog.FindPickupIndex("ItemIndex.ScrapYellow");
-						break;
-				}
-			}
-			if (pickupIndex != PickupIndex.none)
-			{
-				self.foundValidScrap = true;
-				Transform transform = self.FindModelChild(ScrappingToIdle.muzzleString);
-
-				bool addedToInventory = false;
-				if (self.scrapperController && self.scrapperController.interactor)
-                {
-					CharacterBody cb = self.scrapperController.interactor.GetComponent<CharacterBody>();
-					if (cb && cb.inventory)
-                    {
-						PickupDef pd = PickupCatalog.GetPickupDef(pickupIndex);
-						if (pd != null && pd.itemIndex != ItemIndex.None)
-                        {
-							cb.inventory.GiveItem(pd.itemIndex, 1);
-							addedToInventory = true;
-						}
-                    }
-                }
-				
-				if (!addedToInventory) PickupDropletController.CreatePickupDroplet(pickupIndex, transform.position, Vector3.up * ScrappingToIdle.dropUpVelocityStrength + transform.forward * ScrappingToIdle.dropForwardVelocityStrength);
-
-				ScrapperController scrapperController = self.scrapperController;
-				int itemsEaten = scrapperController.itemsEaten;
-				scrapperController.itemsEaten = itemsEaten - 1;
-			}
-		}
     }
 }
