@@ -20,6 +20,7 @@ namespace R2API.Utils
 
 namespace PrintToInventory
 {
+	[BepInDependency("com.funkfrog_sipondo.sharesuite", BepInDependency.DependencyFlags.SoftDependency)]
 	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.0.0")]
 
     public class PrintToInventory : BaseUnityPlugin
@@ -27,52 +28,61 @@ namespace PrintToInventory
 		//private static SceneDef bazaarDef = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/bazaar/bazaar.asset").WaitForCompletion();
 		public static bool affectScrappers = true;
 		public static bool affectPrinters = true;
+		public static bool affectCauldrons = true;
+		public static bool affectCleanse = true;
 
 		public void Awake()
         {
-            if (affectScrappers) On.EntityStates.Scrapper.ScrappingToIdle.OnEnter += ScrappingToIdle_OnEnter;
-			if (affectPrinters) On.EntityStates.Duplicator.Duplicating.DropDroplet += Duplicating_DropDroplet;
-        }
-
-        private void Duplicating_DropDroplet(On.EntityStates.Duplicator.Duplicating.orig_DropDroplet orig, EntityStates.Duplicator.Duplicating self)
-        {
-			if (self.hasDroppedDroplet)
-			{
+			if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.funkfrog_sipondo.sharesuite"))
+            {
+				Debug.LogError("PrintToInventory: ShareSuite detected! PrintToInventory will be disabled due to incompatibilities.");
 				return;
 			}
-			self.hasDroppedDroplet = true;
+
+			affectCauldrons = Config.Bind("General", "Cauldron", true, "Affect this interactable.").Value;
+			affectPrinters = Config.Bind("General", "Printer", true, "Affect this interactable.").Value;
+			affectScrappers = Config.Bind("General", "Scrapper", true, "Affect this interactable.").Value;
+			affectCleanse = Config.Bind("General", "Cleansing Pool", true, "Affect this interactable.").Value;
+
+			if (affectScrappers) On.EntityStates.Scrapper.ScrappingToIdle.OnEnter += ScrappingToIdle_OnEnter;
+			if (affectCauldrons || affectPrinters || affectCleanse) On.RoR2.ShopTerminalBehavior.DropPickup += ShopTerminalBehavior_DropPickup;
+        }
+
+        private void ShopTerminalBehavior_DropPickup(On.RoR2.ShopTerminalBehavior.orig_DropPickup orig, ShopTerminalBehavior self)
+        {
+			bool addedToInventory = false;
 			if (NetworkServer.active)
 			{
-				bool addedToInventory = false;
-				ShopTerminalBehavior stb = self.GetComponent<ShopTerminalBehavior>();
 				PurchaseInteraction pi = self.GetComponent<PurchaseInteraction>();
 				if (pi && pi.lastActivator)
-                {
-					CharacterBody cb = pi.lastActivator.GetComponent<CharacterBody>();
-					if (cb && cb.inventory)
-					{
-						PickupDef pd = PickupCatalog.GetPickupDef(stb.pickupIndex);
-						if (pd != null && pd.itemIndex != ItemIndex.None)
-						{
-							cb.inventory.GiveItem(pd.itemIndex, 1);
-							addedToInventory = true;
-						}
+				{
+					bool isCauldron = affectCauldrons && pi.displayNameToken == "BAZAAR_CAULDRON_NAME";    //Matching by token is bad.
+					bool isCleanse = affectCleanse && pi.displayNameToken == "SHRINE_CLEANSE_NAME";    //Matching by token is bad.
+					bool isPrinter = false;
+					if (!isCauldron && !isCleanse)
+                    {
+						EntityStateMachine esm = self.GetComponent<EntityStateMachine>();
+						if (esm && esm.state.GetType() == typeof(EntityStates.Duplicator.Duplicating)) isPrinter = true;
                     }
-                }
-				if (!addedToInventory) stb.DropPickup();
-			}
-			if (self.muzzleTransform)
-			{
-				if (self.bakeEffectInstance)
-				{
-					EntityState.Destroy(self.bakeEffectInstance);
+
+					if (isCauldron || isCleanse || isPrinter)
+					{
+						CharacterBody cb = pi.lastActivator.GetComponent<CharacterBody>();
+						if (cb && cb.inventory)
+						{
+							PickupDef pd = PickupCatalog.GetPickupDef(self.pickupIndex);
+							if (pd != null && pd.itemIndex != ItemIndex.None)
+							{
+								cb.inventory.GiveItem(pd.itemIndex, 1);
+								addedToInventory = true;
+								self.SetHasBeenPurchased(true);
+							}
+						}
+					}
 				}
-				if (EntityStates.Duplicator.Duplicating.releaseEffectPrefab)
-				{
-					EffectManager.SimpleMuzzleFlash(EntityStates.Duplicator.Duplicating.releaseEffectPrefab, self.gameObject, EntityStates.Duplicator.Duplicating.muzzleString, false);
-				}
 			}
-		}
+			if (!addedToInventory) orig(self);
+        }
 
         private static void ScrappingToIdle_OnEnter(On.EntityStates.Scrapper.ScrappingToIdle.orig_OnEnter orig, ScrappingToIdle self)
         {
