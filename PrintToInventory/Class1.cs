@@ -24,8 +24,7 @@ namespace PrintToInventory
 
     public class PrintToInventory : BaseUnityPlugin
     {
-		private static SceneDef bazaarDef = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/bazaar/bazaar.asset").WaitForCompletion();
-
+		//private static SceneDef bazaarDef = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/bazaar/bazaar.asset").WaitForCompletion();
 		public static bool affectScrappers = true;
 		public static bool affectPrinters = true;
 
