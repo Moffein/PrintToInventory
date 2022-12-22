@@ -73,8 +73,6 @@ namespace PrintToInventory
 						}
 						return pickupIndex;
 					});
-					//c.Emit(OpCodes.Stloc_0);
-					//c.Emit(OpCodes.Ldloc_0);
 				};
             }
 		}
