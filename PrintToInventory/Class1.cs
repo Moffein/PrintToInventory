@@ -23,7 +23,7 @@ namespace R2API.Utils
 namespace PrintToInventory
 {
 	[BepInDependency("com.funkfrog_sipondo.sharesuite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.0.0")]
+	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.1.0")]
 
     public class PrintToInventory : BaseUnityPlugin
     {
@@ -46,7 +46,13 @@ namespace PrintToInventory
 			affectScrappers = Config.Bind("General", "Scrapper", true, "Affect this interactable.").Value;
 			affectCleanse = Config.Bind("General", "Cleansing Pool", true, "Affect this interactable.").Value;
 
-			if (affectCauldrons || affectPrinters || affectCleanse) On.RoR2.ShopTerminalBehavior.DropPickup += ShopTerminalBehavior_DropPickup;
+			if (affectPrinters) On.EntityStates.Duplicator.Duplicating.OnEnter += Duplicating_OnEnter;
+
+			if (affectCauldrons || affectCleanse)
+            {
+				On.RoR2.PurchaseInteraction.OnInteractionBegin += ImmediatelyGiveItem;
+				On.RoR2.ShopTerminalBehavior.DropPickup += PreventDrop;
+			}
 			if (affectScrappers)
             {
 				IL.EntityStates.Scrapper.ScrappingToIdle.OnEnter += (il) =>
@@ -77,40 +83,78 @@ namespace PrintToInventory
             }
 		}
 
-        private void ShopTerminalBehavior_DropPickup(On.RoR2.ShopTerminalBehavior.orig_DropPickup orig, ShopTerminalBehavior self)
-        {
-			bool addedToInventory = false;
+		private void Duplicating_OnEnter(On.EntityStates.Duplicator.Duplicating.orig_OnEnter orig, EntityStates.Duplicator.Duplicating self)
+		{
+			orig(self);
 			if (NetworkServer.active)
 			{
 				PurchaseInteraction pi = self.GetComponent<PurchaseInteraction>();
-				if (pi && pi.lastActivator)
+				ShopTerminalBehavior stb = self.GetComponent<ShopTerminalBehavior>();
+				if (pi && stb)
 				{
-					bool isCauldron = affectCauldrons && pi.displayNameToken == "BAZAAR_CAULDRON_NAME";    //Matching by token is bad.
-					bool isCleanse = affectCleanse && pi.displayNameToken == "SHRINE_CLEANSE_NAME";    //Matching by token is bad.
-					bool isPrinter = false;
-					if (!isCauldron && !isCleanse)
-                    {
-						EntityStateMachine esm = self.GetComponent<EntityStateMachine>();
-						if (esm && esm.state.GetType() == typeof(EntityStates.Duplicator.Duplicating)) isPrinter = true;
-                    }
-
-					if (isCauldron || isCleanse || isPrinter)
+					CharacterBody cb = pi.lastActivator.GetComponent<CharacterBody>();
+					if (cb && cb.inventory)
 					{
-						CharacterBody cb = pi.lastActivator.GetComponent<CharacterBody>();
-						if (cb && cb.inventory)
+						PickupDef pd = PickupCatalog.GetPickupDef(stb.pickupIndex);
+						if (pd != null && pd.itemIndex != ItemIndex.None)
 						{
-							PickupDef pd = PickupCatalog.GetPickupDef(self.pickupIndex);
-							if (pd != null && pd.itemIndex != ItemIndex.None)
-							{
-								cb.inventory.GiveItem(pd.itemIndex, 1);
-								addedToInventory = true;
-								self.SetHasBeenPurchased(true);
-							}
+							cb.inventory.GiveItem(pd.itemIndex, 1);
+							stb.SetHasBeenPurchased(true);
+
+							self.hasDroppedDroplet = true;
+							self.hasStartedCooking = true;
 						}
 					}
 				}
 			}
-			if (!addedToInventory) orig(self);
+		}
+
+		private void ImmediatelyGiveItem(On.RoR2.PurchaseInteraction.orig_OnInteractionBegin orig, PurchaseInteraction self, Interactor activator)
+        {
+			orig(self, activator);
+			PurchaseInteraction pi = self.GetComponent<PurchaseInteraction>();
+
+			if (pi)
+            {
+				bool isCauldron = affectCauldrons && pi.displayNameToken == "BAZAAR_CAULDRON_NAME";    //Matching by token is bad.
+				bool isCleanse = affectCleanse && pi.displayNameToken == "SHRINE_CLEANSE_NAME";    //Matching by token is bad.
+
+				if (isCauldron || isCleanse)
+				{
+					CharacterBody cb = activator.GetComponent<CharacterBody>();
+					ShopTerminalBehavior stb = self.GetComponent<ShopTerminalBehavior>();
+
+					if (cb && cb.inventory && stb)
+					{
+						PickupDef pd = PickupCatalog.GetPickupDef(stb.pickupIndex);
+						if (pd != null && pd.itemIndex != ItemIndex.None)
+						{
+							cb.inventory.GiveItem(pd.itemIndex, 1);
+							stb.SetHasBeenPurchased(true);
+							pi.lastActivator = null;
+						}
+					}
+				}
+			}
+		}
+
+        private void PreventDrop(On.RoR2.ShopTerminalBehavior.orig_DropPickup orig, ShopTerminalBehavior self)
+        {
+			if (NetworkServer.active)
+			{
+				PurchaseInteraction pi = self.GetComponent<PurchaseInteraction>();
+				if (pi)
+				{
+					bool isCauldron = affectCauldrons && pi.displayNameToken == "BAZAAR_CAULDRON_NAME";    //Matching by token is bad.
+					bool isCleanse = affectCleanse && pi.displayNameToken == "SHRINE_CLEANSE_NAME";    //Matching by token is bad.
+
+					if ((isCauldron || isCleanse) && pi.lastActivator == null)
+					{
+						return;
+					}
+				}
+			}
+			orig(self);
         }
     }
 }
