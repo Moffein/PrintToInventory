@@ -23,7 +23,7 @@ namespace R2API.Utils
 namespace PrintToInventory
 {
 	[BepInDependency("com.funkfrog_sipondo.sharesuite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.1.0")]
+	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.1.1")]
 
     public class PrintToInventory : BaseUnityPlugin
     {
