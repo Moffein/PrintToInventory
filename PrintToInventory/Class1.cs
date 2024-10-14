@@ -23,7 +23,7 @@ namespace R2API.Utils
 namespace PrintToInventory
 {
 	[BepInDependency("com.funkfrog_sipondo.sharesuite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.1.2")]
+	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.2.0")]
 
     public class PrintToInventory : BaseUnityPlugin
     {
@@ -129,7 +129,15 @@ namespace PrintToInventory
 						PickupDef pd = PickupCatalog.GetPickupDef(stb.pickupIndex);
 						if (pd != null && pd.itemIndex != ItemIndex.None)
 						{
-							cb.inventory.GiveItem(pd.itemIndex, 1);
+							int dropCount = 1;
+
+							//hardcoded fix for red to white cauldrons
+							if (isCauldron && pi.cost == 1 && pi.costType == CostTypeIndex.RedItem)
+							{
+                                dropCount = 3;
+                            }
+
+							cb.inventory.GiveItem(pd.itemIndex, dropCount);
 							stb.SetHasBeenPurchased(true);
 							pi.lastActivator = null;
 						}
