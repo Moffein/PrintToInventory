@@ -23,7 +23,7 @@ namespace R2API.Utils
 namespace PrintToInventory
 {
 	[BepInDependency("com.funkfrog_sipondo.sharesuite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.2.0")]
+	[BepInPlugin("com.Moffein.PrintToInventory", "PrintToInventory", "1.2.1")]
 
     public class PrintToInventory : BaseUnityPlugin
     {
@@ -132,7 +132,8 @@ namespace PrintToInventory
 							int dropCount = 1;
 
 							//hardcoded fix for red to white cauldrons
-							if (isCauldron && pi.cost == 1 && pi.costType == CostTypeIndex.RedItem)
+							//lunar is for Eulogy
+							if (isCauldron && pi.cost == 1 && pi.costType == CostTypeIndex.RedItem && (stb.itemTier == ItemTier.Tier1 || stb.itemTier == ItemTier.VoidTier1 || stb.itemTier == ItemTier.Lunar))
 							{
                                 dropCount = 3;
                             }
