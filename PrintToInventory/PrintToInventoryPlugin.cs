@@ -32,6 +32,7 @@ namespace PrintToInventory
 		public static bool affectPrinters = true;
 		public static bool affectCauldrons = true;
 		public static bool affectCleanse = true;
+		public static bool affectWanderingChef = true;
 
 		public static bool multiplayerOnly = true;
 
@@ -48,6 +49,7 @@ namespace PrintToInventory
 			affectPrinters = Config.Bind("General", "Printer", true, "Affect this interactable.").Value;
 			affectScrappers = Config.Bind("General", "Scrapper", true, "Affect this interactable.").Value;
 			affectCleanse = Config.Bind("General", "Cleansing Pool", true, "Affect this interactable.").Value;
+			affectWanderingChef = Config.Bind("General", "Affect Wandering Chef", true, "Affect this interactable.").Value;
 
             On.RoR2.Run.Start += Run_Start;
             On.RoR2.Run.OnDestroy += Run_OnDestroy;
@@ -85,9 +87,14 @@ namespace PrintToInventory
             {
                 IL.EntityStates.Scrapper.ScrappingToIdle.OnEnter += ScrappingToIdle_DirectToInventory;
             }
+			if (affectWanderingChef)
+			{
+                On.RoR2.MealPrepController.BeginCookingServer += MealPrepController_BeginCookingServer;
+                IL.EntityStates.MealPrep.CookingToIdle.DropItem += DisableMealPrepDrop;
+			}
         }
 
-		public void RemoveHooks()
+        public void RemoveHooks()
 		{
 			if (!hooksAdded) return;
 			hooksAdded = false;
@@ -102,6 +109,58 @@ namespace PrintToInventory
             if (affectScrappers)
             {
                 IL.EntityStates.Scrapper.ScrappingToIdle.OnEnter -= ScrappingToIdle_DirectToInventory;
+            }
+            if (affectWanderingChef)
+            {
+                On.RoR2.MealPrepController.BeginCookingServer -= MealPrepController_BeginCookingServer;
+                IL.EntityStates.MealPrep.CookingToIdle.DropItem -= DisableMealPrepDrop;
+            }
+        }
+
+        private void MealPrepController_BeginCookingServer(On.RoR2.MealPrepController.orig_BeginCookingServer orig, MealPrepController self, Interactor activator, PickupIndex[] itemsToTake, PickupIndex reward, int count)
+        {
+			orig(self, activator, itemsToTake, reward, count);
+
+			//It drop is an item, give directly to inventory
+            if (NetworkServer.active && activator)
+            {
+                CharacterBody activatorBody = activator.GetComponent<CharacterBody>();
+                if (activatorBody.inventory)
+                {
+					PickupDef pd = PickupCatalog.GetPickupDef(reward);
+					if (pd != null)
+					{
+						if (pd.itemIndex != ItemIndex.None)
+						{
+							activatorBody.inventory.GiveItemPermanent(pd.itemIndex, count);
+						}
+					}
+                }
+            }
+        }
+
+        private void DisableMealPrepDrop(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+            if (c.TryGotoNext(MoveType.After, x => x.MatchCall(typeof(NetworkServer), "get_active")))
+            {
+				c.Emit(OpCodes.Ldarg_0);//self
+                c.EmitDelegate<Func<bool, EntityStates.MealPrep.CookingToIdle, bool>>((active, self) =>
+				{
+					//If the drop is an item, it has already been handled
+					PickupDef pd = PickupCatalog.GetPickupDef(self.pickupToDrop);
+					if (pd != null && pd.itemIndex != ItemIndex.None)
+					{
+						if (NetworkServer.active) self.itemsDropped++;
+                        return false;
+                    }
+
+					return active;
+				});
+            }
+            else
+            {
+                Debug.LogError("PrintToInventory: CookingToIdle_DropItem DisableMealPrepDrop IL hook failed.");
             }
         }
 
