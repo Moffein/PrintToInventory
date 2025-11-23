@@ -6,25 +6,40 @@
 
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>libs\0Harmony.dll</HintPath>
+      <HintPath>libs\BepInEx\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="0Harmony20">
       <HintPath>libs\BepInEx\0Harmony20.dll</HintPath>
+    </Reference>
+    <Reference Include="Ak.Wwise.Api.WAAPI">
+      <HintPath>libs\Ak.Wwise.Api.WAAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="AK.Wwise.Unity.API">
+      <HintPath>libs\AK.Wwise.Unity.API.dll</HintPath>
+    </Reference>
+    <Reference Include="AK.Wwise.Unity.API.WwiseTypes">
+      <HintPath>libs\AK.Wwise.Unity.API.WwiseTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="AK.Wwise.Unity.MonoBehaviour">
+      <HintPath>libs\AK.Wwise.Unity.MonoBehaviour.dll</HintPath>
+    </Reference>
+    <Reference Include="AK.Wwise.Unity.Timeline">
+      <HintPath>libs\AK.Wwise.Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>libs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>libs\BepInEx.dll</HintPath>
+      <HintPath>libs\BepInEx\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Bootstrap">
+      <HintPath>libs\BepInEx\BepInEx.Bootstrap.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Harmony">
-      <HintPath>libs\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.MonoMod.Loader">
-      <HintPath>libs\BepInEx.MonoMod.Loader.dll</HintPath>
+      <HintPath>libs\BepInEx\BepInEx.Harmony.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Preloader">
-      <HintPath>libs\BepInEx.Preloader.dll</HintPath>
+      <HintPath>libs\BepInEx\BepInEx.Preloader.dll</HintPath>
     </Reference>
     <Reference Include="com.unity.multiplayer-hlapi.Runtime">
       <HintPath>libs\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
@@ -53,9 +68,6 @@
     <Reference Include="LegacyResourcesAPI">
       <HintPath>libs\LegacyResourcesAPI.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>libs\MMHOOK_Assembly-CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="MMHOOK_RoR2">
       <HintPath>libs\BepInEx\MMHOOK_RoR2.dll</HintPath>
     </Reference>
@@ -63,34 +75,31 @@
       <HintPath>libs\ModLoader.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>libs\Mono.Cecil.dll</HintPath>
+      <HintPath>libs\BepInEx\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>libs\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>libs\BepInEx\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>libs\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>libs\BepInEx\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>libs\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod">
-      <HintPath>libs\MonoMod.exe</HintPath>
+      <HintPath>libs\BepInEx\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>libs\MonoMod.RuntimeDetour.dll</HintPath>
+      <HintPath>libs\BepInEx\MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod.Utils">
-      <HintPath>libs\MonoMod.Utils.dll</HintPath>
+      <HintPath>libs\BepInEx\MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="R2API">
-      <HintPath>libs\R2API.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>libs\BepInEx\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Rewired_Core">
+      <HintPath>libs\Rewired_Core.dll</HintPath>
     </Reference>
     <Reference Include="Rewired_CSharp">
       <HintPath>libs\Rewired_CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="RiskOfOptions">
-      <HintPath>libs\SoftDependencies\RiskOfOptions.dll</HintPath>
     </Reference>
     <Reference Include="RoR2">
       <HintPath>libs\RoR2.dll</HintPath>
@@ -103,6 +112,9 @@
     </Reference>
     <Reference Include="Unity.Addressables">
       <HintPath>libs\Unity.Addressables.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.MemoryProfiler">
+      <HintPath>libs\Unity.MemoryProfiler.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>libs\Unity.Postprocessing.Runtime.dll</HintPath>
@@ -121,6 +133,12 @@
     </Reference>
     <Reference Include="Unity.ProBuilder.Stl">
       <HintPath>libs\Unity.ProBuilder.Stl.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Recorder">
+      <HintPath>libs\Unity.Recorder.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Recorder.Base">
+      <HintPath>libs\Unity.Recorder.Base.dll</HintPath>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
       <HintPath>libs\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
@@ -188,6 +206,9 @@
     <Reference Include="UnityEngine.GameCenterModule">
       <HintPath>libs\UnityEngine.GameCenterModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.GIModule">
+      <HintPath>libs\UnityEngine.GIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.GridModule">
       <HintPath>libs\UnityEngine.GridModule.dll</HintPath>
     </Reference>
@@ -212,8 +233,8 @@
     <Reference Include="UnityEngine.LocalizationModule">
       <HintPath>libs\UnityEngine.LocalizationModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>libs\UnityEngine.Networking.dll</HintPath>
+    <Reference Include="UnityEngine.NVIDIAModule">
+      <HintPath>libs\UnityEngine.NVIDIAModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>libs\UnityEngine.ParticleSystemModule.dll</HintPath>
@@ -229,6 +250,9 @@
     </Reference>
     <Reference Include="UnityEngine.ProfilerModule">
       <HintPath>libs\UnityEngine.ProfilerModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule">
+      <HintPath>libs\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ScreenCaptureModule">
       <HintPath>libs\UnityEngine.ScreenCaptureModule.dll</HintPath>
@@ -260,8 +284,14 @@
     <Reference Include="UnityEngine.TerrainPhysicsModule">
       <HintPath>libs\UnityEngine.TerrainPhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextCoreFontEngineModule">
+      <HintPath>libs\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextCoreModule">
       <HintPath>libs\UnityEngine.TextCoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreTextEngineModule">
+      <HintPath>libs\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>libs\UnityEngine.TextRenderingModule.dll</HintPath>
@@ -278,6 +308,9 @@
     <Reference Include="UnityEngine.UIElementsModule">
       <HintPath>libs\UnityEngine.UIElementsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIElementsNativeModule">
+      <HintPath>libs\UnityEngine.UIElementsNativeModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>libs\UnityEngine.UIModule.dll</HintPath>
     </Reference>
@@ -287,11 +320,17 @@
     <Reference Include="UnityEngine.UNETModule">
       <HintPath>libs\UnityEngine.UNETModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UnityAnalyticsCommonModule">
+      <HintPath>libs\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UnityAnalyticsModule">
       <HintPath>libs\UnityEngine.UnityAnalyticsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityConnectModule">
       <HintPath>libs\UnityEngine.UnityConnectModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityCurlModule">
+      <HintPath>libs\UnityEngine.UnityCurlModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityTestProtocolModule">
       <HintPath>libs\UnityEngine.UnityTestProtocolModule.dll</HintPath>
@@ -319,6 +358,9 @@
     </Reference>
     <Reference Include="UnityEngine.VideoModule">
       <HintPath>libs\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VirtualTexturingModule">
+      <HintPath>libs\UnityEngine.VirtualTexturingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.VRModule">
       <HintPath>libs\UnityEngine.VRModule.dll</HintPath>
